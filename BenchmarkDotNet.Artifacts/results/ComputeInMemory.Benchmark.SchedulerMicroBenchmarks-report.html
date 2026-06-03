@@ -2,7 +2,7 @@
 <html lang='en'>
 <head>
 <meta charset='utf-8' />
-<title>ComputeInMemory.Benchmark.SchedulerMicroBenchmarks-20260603-113142</title>
+<title>ComputeInMemory.Benchmark.SchedulerMicroBenchmarks-20260603-145202</title>
 
 <style type="text/css">
 	table { border-collapse: collapse; display: block; width: 100%; overflow: auto; }
@@ -19,16 +19,18 @@ AMD Ryzen 7 6800H with Radeon Graphics, 1 CPU, 16 logical and 8 physical cores
   [Host]   : .NET 8.0.25 (8.0.2526.11203), X64 RyuJIT AVX2
   ShortRun : .NET 8.0.25 (8.0.2526.11203), X64 RyuJIT AVX2
 </code></pre>
-<pre><code>Job=ShortRun  IterationCount=5  LaunchCount=1  
-WarmupCount=2  
+<pre><code>Job=ShortRun  LaunchCount=1  
 </code></pre>
 
 <table>
-<thead><tr><th>Method                    </th><th>Mean</th><th>Error</th><th>StdDev</th><th>Gen0</th><th>Gen1</th><th>Allocated</th>
+<thead><tr><th>Method                    </th><th>IterationCount</th><th>WarmupCount</th><th>Mean</th><th>Error</th><th>StdDev</th><th>Gen0</th><th>Gen1</th><th>Allocated</th>
 </tr>
-</thead><tbody><tr><td>&#39;DAG topological sort 100 tasks&#39;</td><td>104.26 &mu;s</td><td>18.025 &mu;s</td><td>4.681 &mu;s</td><td>25.3906</td><td>8.5449</td><td>207.74 KB</td>
-</tr><tr><td>&#39;DAG cycle detection 100 tasks&#39;</td><td>98.00 &mu;s</td><td>4.351 &mu;s</td><td>0.673 &mu;s</td><td>25.1465</td><td>9.0332</td><td>205.6 KB</td>
-</tr><tr><td>&#39;DAG get ready tasks 100 tasks&#39;</td><td>86.34 &mu;s</td><td>5.933 &mu;s</td><td>1.541 &mu;s</td><td>24.6582</td><td>12.2070</td><td>201.7 KB</td>
+</thead><tbody><tr><td>&#39;DAG topological sort 100 tasks&#39;</td><td>3</td><td>1</td><td>74.67 &mu;s</td><td>59.003 &mu;s</td><td>3.234 &mu;s</td><td>25.3906</td><td>8.5449</td><td>207.74 KB</td>
+</tr><tr><td>&#39;DAG cycle detection 100 tasks&#39;</td><td>3</td><td>1</td><td>71.51 &mu;s</td><td>32.154 &mu;s</td><td>1.762 &mu;s</td><td>25.1465</td><td>9.0332</td><td>205.6 KB</td>
+</tr><tr><td>&#39;DAG get ready tasks 100 tasks&#39;</td><td>3</td><td>1</td><td>68.36 &mu;s</td><td>86.056 &mu;s</td><td>4.717 &mu;s</td><td>24.6582</td><td>12.2681</td><td>201.7 KB</td>
+</tr><tr><td>&#39;DAG topological sort 100 tasks&#39;</td><td>5</td><td>2</td><td>79.22 &mu;s</td><td>13.028 &mu;s</td><td>3.383 &mu;s</td><td>25.3906</td><td>8.5449</td><td>207.74 KB</td>
+</tr><tr><td>&#39;DAG cycle detection 100 tasks&#39;</td><td>5</td><td>2</td><td>74.37 &mu;s</td><td>8.661 &mu;s</td><td>1.340 &mu;s</td><td>25.1465</td><td>9.0332</td><td>205.6 KB</td>
+</tr><tr><td>&#39;DAG get ready tasks 100 tasks&#39;</td><td>5</td><td>2</td><td>63.89 &mu;s</td><td>4.302 &mu;s</td><td>1.117 &mu;s</td><td>24.6582</td><td>12.2070</td><td>201.7 KB</td>
 </tr></tbody></table>
 </body>
 </html>

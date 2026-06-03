@@ -6,24 +6,38 @@ AMD Ryzen 7 6800H with Radeon Graphics, 1 CPU, 16 logical and 8 physical cores
   [Host]   : .NET 8.0.25 (8.0.2526.11203), X64 RyuJIT AVX2
   ShortRun : .NET 8.0.25 (8.0.2526.11203), X64 RyuJIT AVX2
 
-Job=ShortRun  IterationCount=10  LaunchCount=1  
-WarmupCount=3  
+Job=ShortRun  LaunchCount=1  
 
 ```
-| Method                                 | DataSize | Mean          | Error         | StdDev        | P95           | Rank | Gen0     | Gen1     | Gen2     | Allocated |
-|--------------------------------------- |--------- |--------------:|--------------:|--------------:|--------------:|-----:|---------:|---------:|---------:|----------:|
-| **&#39;StorageBlock zero-copy span access&#39;**   | **1024**     |      **39.04 ns** |      **1.179 ns** |      **0.780 ns** |      **40.35 ns** |    **1** |        **-** |        **-** |        **-** |         **-** |
-| &#39;ZeroCopyAccessor copy between blocks&#39; | 1024     |     132.51 ns |      3.305 ns |      2.186 ns |     135.21 ns |    3 |        - |        - |        - |         - |
-| &#39;Allocate storage block&#39;               | 1024     |     517.66 ns |     28.406 ns |     16.904 ns |     540.43 ns |    5 |   0.1516 |        - |        - |    1272 B |
-| &#39;ZeroCopyAccessor reinterpret cast&#39;    | 1024     |     187.48 ns |     13.410 ns |      8.870 ns |     196.03 ns |    4 |   0.1252 |   0.0005 |        - |    1048 B |
-| &#39;ZeroCopyAccessor pin and get memory&#39;  | 1024     |      60.12 ns |      1.896 ns |      1.128 ns |      61.54 ns |    2 |        - |        - |        - |         - |
-| **&#39;StorageBlock zero-copy span access&#39;**   | **65536**    |      **38.63 ns** |      **0.445 ns** |      **0.294 ns** |      **39.07 ns** |    **1** |        **-** |        **-** |        **-** |         **-** |
-| &#39;ZeroCopyAccessor copy between blocks&#39; | 65536    |   1,815.91 ns |     37.011 ns |     24.480 ns |   1,848.67 ns |    6 |        - |        - |        - |         - |
-| &#39;Allocate storage block&#39;               | 65536    |   5,079.03 ns |  1,184.628 ns |    783.558 ns |   6,148.79 ns |    7 |   7.8049 |        - |        - |   65784 B |
-| &#39;ZeroCopyAccessor reinterpret cast&#39;    | 65536    |   8,471.01 ns |  2,351.966 ns |  1,555.680 ns |  10,590.21 ns |    8 |   7.8125 |   1.9379 |        - |   65560 B |
-| &#39;ZeroCopyAccessor pin and get memory&#39;  | 65536    |      58.87 ns |      1.808 ns |      1.076 ns |      60.47 ns |    2 |        - |        - |        - |         - |
-| **&#39;StorageBlock zero-copy span access&#39;**   | **1048576**  |      **38.26 ns** |      **0.401 ns** |      **0.265 ns** |      **38.69 ns** |    **1** |        **-** |        **-** |        **-** |         **-** |
-| &#39;ZeroCopyAccessor copy between blocks&#39; | 1048576  |  42,922.14 ns |  1,199.760 ns |    793.567 ns |  43,852.58 ns |    9 |        - |        - |        - |         - |
-| &#39;Allocate storage block&#39;               | 1048576  |  55,915.50 ns |  5,373.700 ns |  3,197.803 ns |  59,770.80 ns |   10 | 105.2856 | 105.1025 | 105.1025 | 1049267 B |
-| &#39;ZeroCopyAccessor reinterpret cast&#39;    | 1048576  | 337,593.32 ns | 27,667.793 ns | 18,300.532 ns | 365,051.70 ns |   11 | 124.5117 | 124.5117 | 124.5117 | 1048638 B |
-| &#39;ZeroCopyAccessor pin and get memory&#39;  | 1048576  |      63.38 ns |      5.980 ns |      3.955 ns |      67.89 ns |    2 |        - |        - |        - |         - |
+| Method                                 | IterationCount | WarmupCount | DataSize | Mean          | Error          | StdDev        | P95           | Rank | Gen0     | Gen1     | Gen2     | Allocated |
+|--------------------------------------- |--------------- |------------ |--------- |--------------:|---------------:|--------------:|--------------:|-----:|---------:|---------:|---------:|----------:|
+| **&#39;StorageBlock zero-copy span access&#39;**   | **10**             | **3**           | **1024**     |      **27.69 ns** |       **0.265 ns** |      **0.176 ns** |      **27.87 ns** |    **1** |        **-** |        **-** |        **-** |         **-** |
+| &#39;ZeroCopyAccessor copy between blocks&#39; | 10             | 3           | 1024     |      95.31 ns |       2.025 ns |      1.205 ns |      97.24 ns |    3 |        - |        - |        - |         - |
+| &#39;Allocate storage block&#39;               | 10             | 3           | 1024     |     363.10 ns |      48.735 ns |     29.001 ns |     408.97 ns |    5 |   0.1516 |   0.0005 |        - |    1272 B |
+| &#39;ZeroCopyAccessor reinterpret cast&#39;    | 10             | 3           | 1024     |     152.52 ns |      50.882 ns |     33.656 ns |     204.62 ns |    4 |   0.1253 |   0.0005 |        - |    1048 B |
+| &#39;ZeroCopyAccessor pin and get memory&#39;  | 10             | 3           | 1024     |      44.78 ns |       2.039 ns |      1.349 ns |      46.63 ns |    2 |        - |        - |        - |         - |
+| &#39;StorageBlock zero-copy span access&#39;   | 3              | 1           | 1024     |      28.70 ns |       4.750 ns |      0.260 ns |      28.91 ns |    1 |        - |        - |        - |         - |
+| &#39;ZeroCopyAccessor copy between blocks&#39; | 3              | 1           | 1024     |      95.66 ns |      56.122 ns |      3.076 ns |      98.50 ns |    3 |        - |        - |        - |         - |
+| &#39;Allocate storage block&#39;               | 3              | 1           | 1024     |     363.34 ns |     400.780 ns |     21.968 ns |     384.78 ns |    5 |   0.1516 |   0.0005 |        - |    1272 B |
+| &#39;ZeroCopyAccessor reinterpret cast&#39;    | 3              | 1           | 1024     |      99.75 ns |     167.540 ns |      9.183 ns |     107.78 ns |    3 |   0.1253 |   0.0005 |        - |    1048 B |
+| &#39;ZeroCopyAccessor pin and get memory&#39;  | 3              | 1           | 1024     |      42.80 ns |       7.170 ns |      0.393 ns |      43.06 ns |    2 |        - |        - |        - |         - |
+| **&#39;StorageBlock zero-copy span access&#39;**   | **10**             | **3**           | **65536**    |      **27.87 ns** |       **0.385 ns** |      **0.229 ns** |      **28.25 ns** |    **1** |        **-** |        **-** |        **-** |         **-** |
+| &#39;ZeroCopyAccessor copy between blocks&#39; | 10             | 3           | 65536    |   1,262.92 ns |      18.128 ns |     11.991 ns |   1,279.51 ns |    6 |        - |        - |        - |         - |
+| &#39;Allocate storage block&#39;               | 10             | 3           | 65536    |   2,968.44 ns |     848.464 ns |    561.207 ns |   3,497.08 ns |    7 |   7.8106 |   0.0019 |        - |   65784 B |
+| &#39;ZeroCopyAccessor reinterpret cast&#39;    | 10             | 3           | 65536    |   5,236.19 ns |   1,870.585 ns |  1,113.155 ns |   6,629.48 ns |    9 |   7.8125 |   1.9455 |        - |   65560 B |
+| &#39;ZeroCopyAccessor pin and get memory&#39;  | 10             | 3           | 65536    |      44.79 ns |       2.205 ns |      1.458 ns |      46.93 ns |    2 |        - |        - |        - |         - |
+| &#39;StorageBlock zero-copy span access&#39;   | 3              | 1           | 65536    |      28.59 ns |       1.704 ns |      0.093 ns |      28.68 ns |    1 |        - |        - |        - |         - |
+| &#39;ZeroCopyAccessor copy between blocks&#39; | 3              | 1           | 65536    |   1,327.65 ns |     304.284 ns |     16.679 ns |   1,337.48 ns |    6 |        - |        - |        - |         - |
+| &#39;Allocate storage block&#39;               | 3              | 1           | 65536    |   6,133.57 ns |   4,899.553 ns |    268.561 ns |   6,338.21 ns |    9 |   7.8049 |        - |        - |   65784 B |
+| &#39;ZeroCopyAccessor reinterpret cast&#39;    | 3              | 1           | 65536    |   4,284.38 ns |  10,869.394 ns |    595.788 ns |   4,870.50 ns |    8 |   7.8125 |   1.9455 |        - |   65560 B |
+| &#39;ZeroCopyAccessor pin and get memory&#39;  | 3              | 1           | 65536    |      42.81 ns |      28.988 ns |      1.589 ns |      44.38 ns |    2 |        - |        - |        - |         - |
+| **&#39;StorageBlock zero-copy span access&#39;**   | **10**             | **3**           | **1048576**  |      **28.27 ns** |       **0.479 ns** |      **0.317 ns** |      **28.68 ns** |    **1** |        **-** |        **-** |        **-** |         **-** |
+| &#39;ZeroCopyAccessor copy between blocks&#39; | 10             | 3           | 1048576  |  28,248.02 ns |   1,354.005 ns |    805.747 ns |  29,284.37 ns |   10 |        - |        - |        - |         - |
+| &#39;Allocate storage block&#39;               | 10             | 3           | 1048576  |  32,563.24 ns |   2,926.300 ns |  1,935.566 ns |  35,261.67 ns |   10 | 113.9526 | 113.7085 | 113.7085 | 1049523 B |
+| &#39;ZeroCopyAccessor reinterpret cast&#39;    | 10             | 3           | 1048576  | 176,990.88 ns |   9,928.615 ns |  6,567.164 ns | 184,258.90 ns |   12 | 152.5879 | 152.5879 | 152.5879 | 1048648 B |
+| &#39;ZeroCopyAccessor pin and get memory&#39;  | 10             | 3           | 1048576  |      44.71 ns |       3.028 ns |      2.003 ns |      47.65 ns |    2 |        - |        - |        - |         - |
+| &#39;StorageBlock zero-copy span access&#39;   | 3              | 1           | 1048576  |      28.06 ns |       2.744 ns |      0.150 ns |      28.21 ns |    1 |        - |        - |        - |         - |
+| &#39;ZeroCopyAccessor copy between blocks&#39; | 3              | 1           | 1048576  |  53,330.07 ns |  20,058.280 ns |  1,099.462 ns |  54,103.20 ns |   11 |        - |        - |        - |         - |
+| &#39;Allocate storage block&#39;               | 3              | 1           | 1048576  |  36,148.14 ns |  55,651.739 ns |  3,050.460 ns |  38,837.93 ns |   10 | 111.0840 | 110.8398 | 110.8398 | 1049469 B |
+| &#39;ZeroCopyAccessor reinterpret cast&#39;    | 3              | 1           | 1048576  | 224,164.05 ns | 320,739.742 ns | 17,580.828 ns | 241,135.03 ns |   12 | 135.7422 | 135.7422 | 135.7422 | 1048642 B |
+| &#39;ZeroCopyAccessor pin and get memory&#39;  | 3              | 1           | 1048576  |      46.66 ns |      16.645 ns |      0.912 ns |      47.46 ns |    2 |        - |        - |        - |         - |
