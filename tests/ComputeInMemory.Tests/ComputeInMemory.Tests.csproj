@@ -26,6 +26,7 @@
     <ProjectReference Include="..\..\src\ComputeInMemory.Storage\ComputeInMemory.Storage.csproj" />
     <ProjectReference Include="..\..\src\ComputeInMemory.Scheduler\ComputeInMemory.Scheduler.csproj" />
     <ProjectReference Include="..\..\src\ComputeInMemory.DataPath\ComputeInMemory.DataPath.csproj" />
+    <ProjectReference Include="..\..\src\ComputeInMemory.Benchmark\ComputeInMemory.Benchmark.csproj" />
   </ItemGroup>
 
 </Project>

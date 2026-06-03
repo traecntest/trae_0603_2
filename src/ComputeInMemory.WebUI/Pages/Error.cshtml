@@ -1,0 +1,13 @@
+@page
+@model ComputeInMemory.WebUI.Pages.ErrorModel
+@{
+    ViewData["Title"] = "错误";
+    Layout = "_Layout";
+}
+
+<div class="error-page">
+    <h2>错误</h2>
+    <p>抱歉，发生了一个错误。</p>
+    <p class="error-code">请求ID: @Model.RequestId</p>
+    <a asp-page="Index" class="btn btn-primary">返回首页</a>
+</div>

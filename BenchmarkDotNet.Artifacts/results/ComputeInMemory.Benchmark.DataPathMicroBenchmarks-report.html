@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+<meta charset='utf-8' />
+<title>ComputeInMemory.Benchmark.DataPathMicroBenchmarks-20260603-112919</title>
+
+<style type="text/css">
+	table { border-collapse: collapse; display: block; width: 100%; overflow: auto; }
+	td, th { padding: 6px 13px; border: 1px solid #ddd; text-align: right; }
+	tr { background-color: #fff; border-top: 1px solid #ccc; }
+	tr:nth-child(even) { background: #f8f8f8; }
+</style>
+</head>
+<body>
+<pre><code>
+BenchmarkDotNet v0.14.0, Windows 11 (10.0.26200.8457)
+AMD Ryzen 7 6800H with Radeon Graphics, 1 CPU, 16 logical and 8 physical cores
+.NET SDK 9.0.312
+  [Host]   : .NET 8.0.25 (8.0.2526.11203), X64 RyuJIT AVX2
+  ShortRun : .NET 8.0.25 (8.0.2526.11203), X64 RyuJIT AVX2
+</code></pre>
+<pre><code>Job=ShortRun  IterationCount=10  LaunchCount=1  
+WarmupCount=3  
+</code></pre>
+
+<table>
+<thead><tr><th>Method                               </th><th>DataSize</th><th>Mean </th><th>Error</th><th>StdDev</th><th>P95  </th><th>Allocated</th>
+</tr>
+</thead><tbody><tr><td>&#39;NativeMemoryBridge copy managed to native&#39;</td><td>1024</td><td>14.09 ns</td><td>1.547 ns</td><td>1.023 ns</td><td>15.59 ns</td><td>-</td>
+</tr><tr><td>&#39;NativeMemoryBridge copy native to managed&#39;</td><td>1024</td><td>16.72 ns</td><td>0.532 ns</td><td>0.317 ns</td><td>17.14 ns</td><td>-</td>
+</tr><tr><td>&#39;PIM simulate vector add&#39;</td><td>1024</td><td>129.79 ns</td><td>4.373 ns</td><td>2.892 ns</td><td>133.98 ns</td><td>-</td>
+</tr><tr><td>&#39;SharedMemory write&#39;</td><td>1024</td><td>17.82 ns</td><td>0.479 ns</td><td>0.317 ns</td><td>18.29 ns</td><td>-</td>
+</tr><tr><td>&#39;SharedMemory read&#39;</td><td>1024</td><td>16.75 ns</td><td>0.375 ns</td><td>0.196 ns</td><td>16.95 ns</td><td>-</td>
+</tr><tr><td>&#39;NativeMemoryBridge copy managed to native&#39;</td><td>65536</td><td>1,451.19 ns</td><td>34.643 ns</td><td>22.914 ns</td><td>1,487.81 ns</td><td>-</td>
+</tr><tr><td>&#39;NativeMemoryBridge copy native to managed&#39;</td><td>65536</td><td>1,455.52 ns</td><td>42.628 ns</td><td>28.195 ns</td><td>1,495.25 ns</td><td>-</td>
+</tr><tr><td>&#39;PIM simulate vector add&#39;</td><td>65536</td><td>8,408.44 ns</td><td>860.440 ns</td><td>512.034 ns</td><td>9,286.66 ns</td><td>-</td>
+</tr><tr><td>&#39;SharedMemory write&#39;</td><td>65536</td><td>1,415.09 ns</td><td>29.295 ns</td><td>15.322 ns</td><td>1,432.72 ns</td><td>-</td>
+</tr><tr><td>&#39;SharedMemory read&#39;</td><td>65536</td><td>1,399.65 ns</td><td>36.790 ns</td><td>24.334 ns</td><td>1,434.66 ns</td><td>-</td>
+</tr></tbody></table>
+</body>
+</html>

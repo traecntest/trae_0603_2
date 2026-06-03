@@ -1,0 +1,161 @@
+@page
+@{
+    ViewData["Title"] = "任务调度";
+    Layout = "_Layout";
+}
+
+<div class="scheduler-page">
+    <h2>计算调度层</h2>
+    
+    <div class="panel">
+        <h3>调度控制</h3>
+        <div class="btn-group">
+            <button onclick="startScheduler()" class="btn btn-success">启动调度器</button>
+            <button onclick="stopScheduler()" class="btn btn-danger">停止调度器</button>
+            <button onclick="refreshTasks()" class="btn btn-secondary">刷新状态</button>
+        </div>
+    </div>
+
+    <div class="panel">
+        <h3>提交任务</h3>
+        <form id="taskForm" class="form-inline">
+            <div class="form-group">
+                <label>任务名称:</label>
+                <input type="text" id="taskName" required placeholder="如: data_processing_01" />
+            </div>
+            <div class="form-group">
+                <label>优先级:</label>
+                <select id="taskPriority">
+                    <option value="0">低 (Low)</option>
+                    <option value="1" selected>普通 (Normal)</option>
+                    <option value="2">高 (High)</option>
+                    <option value="3">关键 (Critical)</option>
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary">提交任务</button>
+        </form>
+    </div>
+
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-value" id="pendingCount">0</div>
+            <div class="stat-label">待执行</div>
+        </div>
+        <div class="stat-card stat-running">
+            <div class="stat-value" id="runningCount">0</div>
+            <div class="stat-label">运行中</div>
+        </div>
+        <div class="stat-card stat-success">
+            <div class="stat-value" id="completedCount">0</div>
+            <div class="stat-label">已完成</div>
+        </div>
+        <div class="stat-card stat-error">
+            <div class="stat-value" id="failedCount">0</div>
+            <div class="stat-label">失败</div>
+        </div>
+    </div>
+
+    <div class="panel">
+        <h3>硬件资源</h3>
+        <table class="data-table" id="resourcesTable">
+            <thead>
+                <tr>
+                    <th>资源ID</th>
+                    <th>类型</th>
+                    <th>核心数</th>
+                    <th>内存</th>
+                    <th>计算能力</th>
+                    <th>能效比</th>
+                    <th>负载</th>
+                    <th>状态</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+document.getElementById('taskForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const name = document.getElementById('taskName').value;
+    const priority = document.getElementById('taskPriority').value;
+    
+    try {
+        const response = await fetch(`/api/scheduler/submit?name=${encodeURIComponent(name)}&priority=${priority}`, {
+            method: 'POST'
+        });
+        const result = await response.json();
+        alert('任务已提交: ' + result.taskId);
+        document.getElementById('taskForm').reset();
+        refreshTasks();
+    } catch(e) {
+        alert('提交失败');
+    }
+});
+
+async function startScheduler() {
+    try {
+        await fetch('/api/scheduler/start', { method: 'POST' });
+        alert('调度器已启动');
+        refreshTasks();
+    } catch(e) {
+        alert('启动失败');
+    }
+}
+
+async function stopScheduler() {
+    try {
+        await fetch('/api/scheduler/stop', { method: 'POST' });
+        alert('调度器已停止');
+        refreshTasks();
+    } catch(e) {
+        alert('停止失败');
+    }
+}
+
+async function refreshTasks() {
+    try {
+        const tasks = await fetch('/api/scheduler/tasks').then(r => r.json());
+        document.getElementById('pendingCount').textContent = tasks.pendingCount;
+        document.getElementById('runningCount').textContent = tasks.runningCount;
+        document.getElementById('completedCount').textContent = tasks.completedCount;
+        document.getElementById('failedCount').textContent = tasks.failedCount;
+
+        const resources = await fetch('/api/scheduler/resources').then(r => r.json());
+        const tbody = document.querySelector('#resourcesTable tbody');
+        tbody.innerHTML = resources.map(r => `
+            <tr>
+                <td>${r.id}</td>
+                <td><span class="hw-type hw-${r.type.toLowerCase()}">${r.type}</span></td>
+                <td>${r.coreCount}</td>
+                <td>${formatBytes(r.memoryBytes)}</td>
+                <td>${r.computeCapacity}</td>
+                <td>${r.energyEfficiencyRatio}</td>
+                <td>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: ${r.currentLoad * 100}%"></div>
+                    </div>
+                    ${(r.currentLoad * 100).toFixed(1)}%
+                </td>
+                <td>${r.isAvailable ? '<span class="status-online">可用</span>' : '<span class="status-offline">不可用</span>'}</td>
+            </tr>
+        `).join('');
+    } catch(e) {
+        console.error('加载失败:', e);
+    }
+}
+
+function formatBytes(bytes) {
+    if (bytes === 0) return '0 B';
+    const k = 1024;
+    const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}
+
+refreshTasks();
+setInterval(refreshTasks, 3000);
+</script>
+}

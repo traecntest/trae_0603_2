@@ -60,10 +60,10 @@ public class StorageBlockTests
     {
         var data = new byte[100];
         var block = new StorageBlock("test", data, StorageType.Memory, StorageTier.Hot,
-            TimeSpan.FromMilliseconds(1));
+            TimeSpan.FromMilliseconds(50));
 
         Assert.False(block.IsExpired);
-        Thread.Sleep(10);
+        Thread.Sleep(100);
         Assert.True(block.IsExpired);
     }
 

@@ -1,0 +1,41 @@
+@using Microsoft.AspNetCore.Mvc.RazorPages
+@namespace ComputeInMemory.WebUI.Pages
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - 存算一体架构管理系统</title>
+    <link rel="stylesheet" href="~/css/site.css" />
+</head>
+<body>
+    <header>
+        <nav class="navbar">
+            <div class="navbar-brand">
+                <h1>存算一体架构管理系统</h1>
+                <span class="subtitle">Compute-In-Memory Architecture Console</span>
+            </div>
+            <ul class="nav-menu">
+                <li><a asp-page="Index">总览</a></li>
+                <li><a asp-page="Storage">存储管理</a></li>
+                <li><a asp-page="Scheduler">任务调度</a></li>
+                <li><a asp-page="DataPath">数据通路</a></li>
+                <li><a asp-page="Performance">性能评估</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main class="container">
+        @RenderBody()
+    </main>
+
+    <footer class="footer">
+        <p>&copy; 2026 存算一体架构系统 | .NET 8.0</p>
+    </footer>
+
+    <script src="~/js/site.js"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

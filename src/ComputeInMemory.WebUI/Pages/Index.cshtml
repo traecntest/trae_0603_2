@@ -1,0 +1,166 @@
+@page
+@{
+    ViewData["Title"] = "总览";
+    Layout = "_Layout";
+}
+
+<div class="dashboard">
+    <h2>系统总览</h2>
+    
+    <div class="card-grid">
+        <div class="card">
+            <div class="card-header">存储管理层</div>
+            <div class="card-body">
+                <div class="metric">
+                    <span class="label">状态:</span>
+                    <span class="value status-online">运行中</span>
+                </div>
+                <div class="metric">
+                    <span class="label">存储块数量:</span>
+                    <span class="value" id="blockCount">-</span>
+                </div>
+                <div class="metric">
+                    <span class="label">总分配容量:</span>
+                    <span class="value" id="totalAllocated">-</span>
+                </div>
+                <a asp-page="Storage" class="btn btn-primary">进入管理</a>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">计算调度层</div>
+            <div class="card-body">
+                <div class="metric">
+                    <span class="label">状态:</span>
+                    <span class="value" id="schedulerStatus">停止</span>
+                </div>
+                <div class="metric">
+                    <span class="label">待执行:</span>
+                    <span class="value" id="pendingTasks">-</span>
+                </div>
+                <div class="metric">
+                    <span class="label">运行中:</span>
+                    <span class="value" id="runningTasks">-</span>
+                </div>
+                <div class="metric">
+                    <span class="label">已完成:</span>
+                    <span class="value" id="completedTasks">-</span>
+                </div>
+                <a asp-page="Scheduler" class="btn btn-primary">进入管理</a>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">数据通路优化层</div>
+            <div class="card-body">
+                <div class="metric">
+                    <span class="label">共享内存分配:</span>
+                    <span class="value" id="sharedMemory">-</span>
+                </div>
+                <div class="metric">
+                    <span class="label">PIM指令数量:</span>
+                    <span class="value" id="pimInstructions">-</span>
+                </div>
+                <div class="metric">
+                    <span class="label">通道状态:</span>
+                    <span class="value status-online">正常</span>
+                </div>
+                <a asp-page="DataPath" class="btn btn-primary">进入管理</a>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">性能评估</div>
+            <div class="card-body">
+                <div class="metric">
+                    <span class="label">数据搬运减少率:</span>
+                    <span class="value" id="dataReduction">-</span>
+                </div>
+                <div class="metric">
+                    <span class="label">计算能效比:</span>
+                    <span class="value" id="energyEfficiency">-</span>
+                </div>
+                <div class="metric">
+                    <span class="label">硬件利用率:</span>
+                    <span class="value" id="hwUtilization">-</span>
+                </div>
+                <a asp-page="Performance" class="btn btn-primary">进入监控</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h3>硬件资源</h3>
+        <table class="data-table" id="hardwareTable">
+            <thead>
+                <tr>
+                    <th>资源ID</th>
+                    <th>类型</th>
+                    <th>核心数</th>
+                    <th>内存</th>
+                    <th>计算能力</th>
+                    <th>能效比</th>
+                    <th>当前负载</th>
+                    <th>状态</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+async function loadDashboard() {
+    try {
+        const blocks = await fetch('/api/storage/blocks').then(r => r.json());
+        document.getElementById('blockCount').textContent = blocks.length;
+        const total = blocks.reduce((sum, b) => sum + b.sizeBytes, 0);
+        document.getElementById('totalAllocated').textContent = formatBytes(total);
+
+        const tasks = await fetch('/api/scheduler/tasks').then(r => r.json());
+        document.getElementById('schedulerStatus').textContent = tasks.pendingCount > 0 || tasks.runningCount > 0 ? '运行中' : '空闲';
+        document.getElementById('pendingTasks').textContent = tasks.pendingCount;
+        document.getElementById('runningTasks').textContent = tasks.runningCount;
+        document.getElementById('completedTasks').textContent = tasks.completedCount;
+
+        const shared = await fetch('/api/datapath/sharedmemory').then(r => r.json());
+        document.getElementById('sharedMemory').textContent = formatBytes(shared.totalAllocatedBytes);
+        document.getElementById('pimInstructions').textContent = '0';
+
+        const perf = await fetch('/api/performance/metrics').then(r => r.json());
+        document.getElementById('dataReduction').textContent = (perf.dataMovementReductionRate * 100).toFixed(1) + '%';
+        document.getElementById('energyEfficiency').textContent = perf.computeEnergyEfficiencyRatio.toFixed(2) + ' tasks/J';
+        document.getElementById('hwUtilization').textContent = (perf.hardwareUtilizationRate * 100).toFixed(1) + '%';
+
+        const resources = await fetch('/api/scheduler/resources').then(r => r.json());
+        const tbody = document.querySelector('#hardwareTable tbody');
+        tbody.innerHTML = resources.map(r => `
+            <tr>
+                <td>${r.id}</td>
+                <td><span class="hw-type hw-${r.type.toLowerCase()}">${r.type}</span></td>
+                <td>${r.coreCount}</td>
+                <td>${formatBytes(r.memoryBytes)}</td>
+                <td>${r.computeCapacity}</td>
+                <td>${r.energyEfficiencyRatio}</td>
+                <td>${(r.currentLoad * 100).toFixed(1)}%</td>
+                <td>${r.isAvailable ? '<span class="status-online">可用</span>' : '<span class="status-offline">不可用</span>'}</td>
+            </tr>
+        `).join('');
+    } catch(e) {
+        console.error('加载失败:', e);
+    }
+}
+
+function formatBytes(bytes) {
+    if (bytes === 0) return '0 B';
+    const k = 1024;
+    const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}
+
+loadDashboard();
+setInterval(loadDashboard, 5000);
+</script>
+}

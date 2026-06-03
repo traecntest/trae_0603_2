@@ -1,0 +1,204 @@
+@page
+@{
+    ViewData["Title"] = "数据通路";
+    Layout = "_Layout";
+}
+
+<div class="datapath-page">
+    <h2>数据通路优化层</h2>
+    
+    <div class="card-grid">
+        <div class="card">
+            <div class="card-header">Pipeline通信</div>
+            <div class="card-body">
+                <div class="metric">
+                    <span class="label">状态:</span>
+                    <span class="value status-online">就绪</span>
+                </div>
+                <p>基于 System.IO.Pipelines 实现高性能零拷贝通信通道</p>
+                <ul class="feature-list">
+                    <li>背压控制</li>
+                    <li>消息序列化</li>
+                    <li>异步读写</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">共享内存管理</div>
+            <div class="card-body">
+                <div class="metric">
+                    <span class="label">已分配:</span>
+                    <span class="value" id="totalShared">0 B</span>
+                </div>
+                <div class="metric">
+                    <span class="label">区域数量:</span>
+                    <span class="value" id="regionCount">0</span>
+                </div>
+                <div class="form-inline">
+                    <input type="text" id="regionName" placeholder="区域名称" />
+                    <input type="number" id="regionSize" value="1024" />
+                    <select id="regionUnit">
+                        <option value="1024">KB</option>
+                        <option value="1048576">MB</option>
+                    </select>
+                    <button onclick="createRegion()" class="btn btn-primary">创建</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">近存计算通道</div>
+            <div class="card-body">
+                <div class="metric">
+                    <span class="label">指令下发:</span>
+                    <span class="value" id="pimCount">0</span>
+                </div>
+                <p>PIM (Processing-In-Memory) 指令编码与下发</p>
+                <ul class="feature-list">
+                    <li>VectorAdd 指令</li>
+                    <li>VectorMultiply 指令</li>
+                    <li>Reduce 指令</li>
+                </ul>
+                <button onclick="simulatePim()" class="btn btn-secondary">执行PIM模拟</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">原生内存桥接</div>
+            <div class="card-body">
+                <p>托管与非托管内存无缝桥接</p>
+                <ul class="feature-list">
+                    <li>MemoryMarshal 转换</li>
+                    <li>Unsafe 底层操作</li>
+                    <li>零拷贝互操作</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="panel">
+        <h3>共享内存区域</h3>
+        <table class="data-table" id="regionsTable">
+            <thead>
+                <tr>
+                    <th>名称</th>
+                    <th>大小</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td colspan="3" class="text-center">暂无共享内存区域</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="panel">
+        <h3>支持的PIM指令集</h3>
+        <div class="instruction-grid">
+            <div class="instruction-item">
+                <div class="instruction-code">VADD</div>
+                <div class="instruction-name">Vector Add</div>
+                <div class="instruction-desc">向量加法运算</div>
+            </div>
+            <div class="instruction-item">
+                <div class="instruction-code">VMUL</div>
+                <div class="instruction-name">Vector Multiply</div>
+                <div class="instruction-desc">向量乘法运算</div>
+            </div>
+            <div class="instruction-item">
+                <div class="instruction-code">RED</div>
+                <div class="instruction-name">Reduce</div>
+                <div class="instruction-desc">归约求和运算</div>
+            </div>
+            <div class="instruction-item">
+                <div class="instruction-code">MAT</div>
+                <div class="instruction-name">Matrix Multiply</div>
+                <div class="instruction-desc">矩阵乘法运算</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+const regions = [];
+
+async function createRegion() {
+    const name = document.getElementById('regionName').value;
+    const size = parseInt(document.getElementById('regionSize').value);
+    const unit = parseInt(document.getElementById('regionUnit').value);
+    
+    if (!name) {
+        alert('请输入区域名称');
+        return;
+    }
+
+    try {
+        const response = await fetch(`/api/datapath/sharedmemory/create?name=${encodeURIComponent(name)}&size=${size * unit}`, {
+            method: 'POST'
+        });
+        if (response.ok) {
+            const result = await response.json();
+            regions.push(result);
+            alert('创建成功');
+            updateRegionsTable();
+            document.getElementById('regionName').value = '';
+        } else {
+            alert('创建失败');
+        }
+    } catch(e) {
+        alert('创建失败');
+    }
+}
+
+async function deleteRegion(name) {
+    if (confirm('确定要删除区域 "' + name + '" 吗?')) {
+        try {
+            await fetch(`/api/datapath/sharedmemory/${encodeURIComponent(name)}`, { method: 'DELETE' });
+            const idx = regions.findIndex(r => r.name === name);
+            if (idx >= 0) regions.splice(idx, 1);
+            updateRegionsTable();
+        } catch(e) {
+            alert('删除失败');
+        }
+    }
+}
+
+function updateRegionsTable() {
+    const tbody = document.querySelector('#regionsTable tbody');
+    if (regions.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="3" class="text-center">暂无共享内存区域</td></tr>';
+    } else {
+        tbody.innerHTML = regions.map(r => `
+            <tr>
+                <td>${r.name}</td>
+                <td>${formatBytes(r.size)}</td>
+                <td><button onclick="deleteRegion('${r.name}')" class="btn btn-danger btn-small">删除</button></td>
+            </tr>
+        `).join('');
+    }
+
+    const total = regions.reduce((sum, r) => sum + r.size, 0);
+    document.getElementById('totalShared').textContent = formatBytes(total);
+    document.getElementById('regionCount').textContent = regions.length;
+}
+
+let pimCount = 0;
+function simulatePim() {
+    pimCount++;
+    document.getElementById('pimCount').textContent = pimCount;
+    alert('PIM 指令执行模拟完成');
+}
+
+function formatBytes(bytes) {
+    if (bytes === 0) return '0 B';
+    const k = 1024;
+    const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}
+
+updateRegionsTable();
+</script>
+}

@@ -1,0 +1,183 @@
+@page
+@{
+    ViewData["Title"] = "存储管理";
+    Layout = "_Layout";
+}
+
+<div class="storage-page">
+    <h2>存储管理层</h2>
+    
+    <div class="panel">
+        <h3>分配存储块</h3>
+        <form id="allocateForm" class="form-inline">
+            <div class="form-group">
+                <label>键名:</label>
+                <input type="text" id="blockKey" required placeholder="如: data_block_001" />
+            </div>
+            <div class="form-group">
+                <label>大小:</label>
+                <input type="number" id="blockSize" required min="1" value="1024" />
+                <select id="sizeUnit">
+                    <option value="1">B</option>
+                    <option value="1024">KB</option>
+                    <option value="1048576" selected>MB</option>
+                    <option value="1073741824">GB</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>存储类型:</label>
+                <select id="storageType">
+                    <option value="Memory">内存</option>
+                    <option value="Cache">缓存</option>
+                    <option value="Persistent">持久化</option>
+                    <option value="Distributed">分布式</option>
+                    <option value="NearCompute">近存</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>层级:</label>
+                <select id="storageTier">
+                    <option value="Hot">热数据</option>
+                    <option value="Warm">温数据</option>
+                    <option value="Cold">冷数据</option>
+                    <option value="Archive">归档</option>
+                </select>
+            </div>
+            <button type="submit" class="btn btn-success">分配存储</button>
+        </form>
+    </div>
+
+    <div class="panel">
+        <h3>存储块列表</h3>
+        <div class="table-toolbar">
+            <button onclick="refreshBlocks()" class="btn btn-secondary">刷新</button>
+        </div>
+        <table class="data-table" id="blocksTable">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>键名</th>
+                    <th>大小</th>
+                    <th>类型</th>
+                    <th>层级</th>
+                    <th>访问次数</th>
+                    <th>最后访问</th>
+                    <th>固定</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-value" id="hotCount">0</div>
+            <div class="stat-label">热数据块</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value" id="warmCount">0</div>
+            <div class="stat-label">温数据块</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value" id="coldCount">0</div>
+            <div class="stat-label">冷数据块</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value" id="archiveCount">0</div>
+            <div class="stat-label">归档块</div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+document.getElementById('allocateForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const key = document.getElementById('blockKey').value;
+    const size = parseInt(document.getElementById('blockSize').value);
+    const unit = parseInt(document.getElementById('sizeUnit').value);
+    const type = document.getElementById('storageType').value;
+    const tier = document.getElementById('storageTier').value;
+    
+    try {
+        const response = await fetch(`/api/storage/allocate?key=${encodeURIComponent(key)}&size=${size * unit}&type=${type}&tier=${tier}`, {
+            method: 'POST'
+        });
+        const result = await response.json();
+        alert('分配成功: ' + result.key);
+        refreshBlocks();
+        document.getElementById('allocateForm').reset();
+    } catch(e) {
+        alert('分配失败');
+    }
+});
+
+async function refreshBlocks() {
+    try {
+        const blocks = await fetch('/api/storage/blocks').then(r => r.json());
+        const tbody = document.querySelector('#blocksTable tbody');
+        tbody.innerHTML = blocks.map(b => `
+            <tr>
+                <td title="${b.id}">${b.id.substring(0, 8)}...</td>
+                <td>${b.key}</td>
+                <td>${formatBytes(b.sizeBytes)}</td>
+                <td>${b.type}</td>
+                <td><span class="tier tier-${b.tier.toLowerCase()}">${b.tier}</span></td>
+                <td>${b.accessCount}</td>
+                <td>${formatDate(b.lastAccessedAt)}</td>
+                <td>${b.isPinned ? '✓' : ''}</td>
+                <td class="actions">
+                    <button onclick="promoteBlock('${b.key}')" class="btn btn-small">晋升</button>
+                    <button onclick="deleteBlock('${b.key}')" class="btn btn-danger btn-small">删除</button>
+                </td>
+            </tr>
+        `).join('');
+
+        document.getElementById('hotCount').textContent = blocks.filter(b => b.tier === 'Hot').length;
+        document.getElementById('warmCount').textContent = blocks.filter(b => b.tier === 'Warm').length;
+        document.getElementById('coldCount').textContent = blocks.filter(b => b.tier === 'Cold').length;
+        document.getElementById('archiveCount').textContent = blocks.filter(b => b.tier === 'Archive').length;
+    } catch(e) {
+        console.error('加载失败:', e);
+    }
+}
+
+async function promoteBlock(key) {
+    const newTier = prompt('请输入目标层级 (Hot/Warm/Cold/Archive):', 'Hot');
+    if (newTier) {
+        try {
+            await fetch(`/api/storage/${encodeURIComponent(key)}/promote?targetTier=${newTier}`, { method: 'POST' });
+            refreshBlocks();
+        } catch(e) {
+            alert('操作失败');
+        }
+    }
+}
+
+async function deleteBlock(key) {
+    if (confirm('确定要删除存储块 "' + key + '" 吗?')) {
+        try {
+            await fetch(`/api/storage/${encodeURIComponent(key)}`, { method: 'DELETE' });
+            refreshBlocks();
+        } catch(e) {
+            alert('删除失败');
+        }
+    }
+}
+
+function formatBytes(bytes) {
+    if (bytes === 0) return '0 B';
+    const k = 1024;
+    const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}
+
+function formatDate(dateStr) {
+    return new Date(dateStr).toLocaleString('zh-CN');
+}
+
+refreshBlocks();
+</script>
+}

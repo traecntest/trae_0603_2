@@ -1,0 +1,161 @@
+@page
+@{
+    ViewData["Title"] = "性能评估";
+    Layout = "_Layout";
+}
+
+<div class="performance-page">
+    <h2>性能评估与监控</h2>
+    
+    <div class="metrics-grid">
+        <div class="metric-card">
+            <div class="metric-icon">📊</div>
+            <div class="metric-content">
+                <div class="metric-label">数据搬运减少率</div>
+                <div class="metric-value" id="dataReduction">0.0%</div>
+                <div class="metric-desc">通过近存计算减少的数据搬运比例</div>
+            </div>
+        </div>
+
+        <div class="metric-card">
+            <div class="metric-icon">⚡</div>
+            <div class="metric-content">
+                <div class="metric-label">计算能效比</div>
+                <div class="metric-value" id="energyEfficiency">0.00 tasks/J</div>
+                <div class="metric-desc">单位能耗完成的任务数量</div>
+            </div>
+        </div>
+
+        <div class="metric-card">
+            <div class="metric-icon">⏱️</div>
+            <div class="metric-content">
+                <div class="metric-label">任务调度延迟</div>
+                <div class="metric-value" id="schedulingLatency">0.00 ms</div>
+                <div class="metric-desc">任务提交到开始执行的平均延迟</div>
+            </div>
+        </div>
+
+        <div class="metric-card">
+            <div class="metric-icon">🖥️</div>
+            <div class="metric-content">
+                <div class="metric-label">硬件利用率</div>
+                <div class="metric-value" id="hwUtilization">0.0%</div>
+                <div class="metric-desc">异构硬件资源整体利用率</div>
+            </div>
+        </div>
+
+        <div class="metric-card">
+            <div class="metric-icon">🚀</div>
+            <div class="metric-content">
+                <div class="metric-label">系统吞吐量</div>
+                <div class="metric-value" id="throughput">0 ops/s</div>
+                <div class="metric-desc">每秒完成的操作数量</div>
+            </div>
+        </div>
+
+        <div class="metric-card">
+            <div class="metric-icon">📈</div>
+            <div class="metric-content">
+                <div class="metric-label">平均执行延迟</div>
+                <div class="metric-value" id="avgLatency">0.00 ms</div>
+                <div class="metric-desc">任务平均执行时间</div>
+            </div>
+        </div>
+
+        <div class="metric-card">
+            <div class="metric-icon">💾</div>
+            <div class="metric-content">
+                <div class="metric-label">内存分配</div>
+                <div class="metric-value" id="memAllocated">0 B</div>
+                <div class="metric-desc">测量周期内分配的内存</div>
+            </div>
+        </div>
+
+        <div class="metric-card">
+            <div class="metric-icon">🧹</div>
+            <div class="metric-content">
+                <div class="metric-label">P95 延迟</div>
+                <div class="metric-value" id="p95Latency">0.00 ms</div>
+                <div class="metric-desc">95%分位任务执行延迟</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="panel">
+        <h3>GC 压力监控</h3>
+        <div class="gc-stats">
+            <div class="gc-item">
+                <div class="gc-label">Gen 0 回收次数</div>
+                <div class="gc-value" id="gen0Count">0</div>
+            </div>
+            <div class="gc-item">
+                <div class="gc-label">Gen 1 回收次数</div>
+                <div class="gc-value" id="gen1Count">0</div>
+            </div>
+            <div class="gc-item">
+                <div class="gc-label">Gen 2 回收次数</div>
+                <div class="gc-value" id="gen2Count">0</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="panel">
+        <h3>性能测试说明</h3>
+        <div class="test-info">
+            <h4>微观性能基准测试 (Micro-benchmarks)</h4>
+            <p>使用 BenchmarkDotNet 进行方法级性能测试：</p>
+            <ul>
+                <li><strong>存储层测试</strong>: 零拷贝访问、存储块分配、类型重解释、跨块拷贝</li>
+                <li><strong>数据通路测试</strong>: 托管/非托管互操作、PIM指令模拟、共享内存读写</li>
+                <li><strong>调度层测试</strong>: DAG拓扑排序、环检测、就绪任务获取</li>
+            </ul>
+
+            <h4>系统级性能剖析</h4>
+            <ul>
+                <li>使用 PerfView 进行 CPU 热点分析</li>
+                <li>使用 dotTrace 进行线程竞争分析</li>
+                <li>GC 压力与内存泄漏检测</li>
+            </ul>
+
+            <h4>运行测试命令</h4>
+            <code class="code-block">
+dotnet run -p src/ComputeInMemory.Benchmark -c Release
+            </code>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+async function loadMetrics() {
+    try {
+        const perf = await fetch('/api/performance/metrics').then(r => r.json());
+        
+        document.getElementById('dataReduction').textContent = (perf.dataMovementReductionRate * 100).toFixed(1) + '%';
+        document.getElementById('energyEfficiency').textContent = perf.computeEnergyEfficiencyRatio.toFixed(2) + ' tasks/J';
+        document.getElementById('schedulingLatency').textContent = perf.taskSchedulingLatencyMs.toFixed(2) + ' ms';
+        document.getElementById('hwUtilization').textContent = (perf.hardwareUtilizationRate * 100).toFixed(1) + '%';
+        document.getElementById('throughput').textContent = perf.throughputOpsPerSecond.toFixed(0) + ' ops/s';
+        document.getElementById('avgLatency').textContent = perf.averageLatencyMs.toFixed(2) + ' ms';
+        document.getElementById('memAllocated').textContent = formatBytes(perf.memoryAllocatedBytes);
+        document.getElementById('p95Latency').textContent = perf.p95LatencyMs.toFixed(2) + ' ms';
+        document.getElementById('gen0Count').textContent = perf.gcGen0Collections;
+        document.getElementById('gen1Count').textContent = perf.gcGen1Collections;
+        document.getElementById('gen2Count').textContent = perf.gcGen2Collections;
+    } catch(e) {
+        console.error('加载失败:', e);
+    }
+}
+
+function formatBytes(bytes) {
+    if (bytes === 0) return '0 B';
+    const k = 1024;
+    const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}
+
+loadMetrics();
+setInterval(loadMetrics, 2000);
+</script>
+}
