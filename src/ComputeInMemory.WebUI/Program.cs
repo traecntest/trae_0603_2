@@ -3,6 +3,7 @@ using ComputeInMemory.Benchmark;
 using ComputeInMemory.DataPath;
 using ComputeInMemory.Scheduler;
 using ComputeInMemory.Storage;
+using ComputeInMemory.WebUI.Services;
 using PimTaskScheduler = ComputeInMemory.Scheduler.TaskScheduler;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -71,6 +72,7 @@ builder.Services.AddSingleton<PimTaskScheduler>(sp =>
 builder.Services.AddSingleton<SharedMemoryManager>();
 builder.Services.AddSingleton<NearComputeChannel>();
 builder.Services.AddSingleton<PerformanceMonitor>(_ => new PerformanceMonitor());
+builder.Services.AddHostedService<PerformanceDataSimulator>();
 
 var app = builder.Build();
 
